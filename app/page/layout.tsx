@@ -3,7 +3,7 @@ import { Metadata } from "next";
 export const metadata: Metadata = {
   title: {
     template: "%s | 首页",
-    default: "周边玩",
+    default: "nuo yuan",
   },
 
 };

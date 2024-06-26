@@ -1,7 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactStrictMode: false,
+  swcMinify: true,
+  output: "standalone",
   images: {
-    domains: ['cddwlp.cn'],
+    domains: [""],
   },
   async redirects() {
     return [

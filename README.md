@@ -2,45 +2,26 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Getting Started
 
-First, run the development server:
+## 启动依赖服务
+需要启动postgresql数据库
+```shell
+docker-compose up -d
+```
+
+### 安装依赖
+
+```bash
+npm i
+# or
+yarn 
+```
+
+### 运行服务
 
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
-
-<!-- icon https://www.iconfont.cn/search/index?searchType=icon&q=travel&page=7&tag=complex -->
-
-## 启动依赖服务
-
-```shell
-docker-compose up -d
 ```
 
 ## 使用 prisma
@@ -69,8 +50,59 @@ https://juejin.cn/post/7153283997060202527#heading-16
    npx ts-node ./prisma/seed.ts
    ```
 
-### 后台运行
-
+### 打包docker镜像
 ```shell
-nohup yarn start & disown
+docker build -f Dockerfile . -t ansike/nuo
+```
+### 推送镜像
+```shell
+docker push ansike/nuo
+```
+
+## 线上demo部署
+```shell
+cat > docker-compose.yml<<EOF
+version: '3.1'
+services:
+  app:
+    image: ansike/nuo
+    restart: always
+    ports:
+      - 3030:3030
+    # change online
+    environment:
+      - DATABASE_URL=postgresql://myuser:mypassword@db:5432/nuo?schema=public
+      - SESSION_SECRET=+toeYHYcEtaHrYm21gArpYgRi0HXunAD6Fjb+BhivEU= 
+    networks:
+      - mynetwork
+  db:
+    image: postgres
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+    restart: always
+    # change online
+    environment:
+      - POSTGRES_USER=myuser
+      - POSTGRES_PASSWORD=mypassword
+    networks:
+      - mynetwork
+networks:
+  mynetwork:
+    driver: bridge
+EOF
+
+# 启动服务
+docker-compose up -d
+
+# 停止服务
+docker-compose down
+```
+
+### 服务器无法访问docker hub 的 case
+```shell
+docker save -o nuo.tar ansike/nuo
+
+scp nuo.tar root@47.102.84.xx:~
+
+docker load -i nuo.tar 
 ```
